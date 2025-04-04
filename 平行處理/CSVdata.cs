@@ -14,6 +14,5 @@ namespace 平行處理
         public string email { get; set; }
         public string gender { get; set; }
         public string ipAddress { get; set; }
-        public string image2 { get; set; }
     }
 }

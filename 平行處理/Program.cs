@@ -17,7 +17,11 @@ namespace 平行處理
 
             stopwatch.Start();
 
-            List<CSVdata> list = helper.Read<CSVdata>("C:\\Users\\user\\source\\repos\\C#基礎專案\\平行處理\\Input\\MOCK_DATA_5000.csv");
+            List<CSVdata> list = helper.Read<CSVdata>("C:\\Users\\user\\source\\repos\\C#基礎專案\\平行處理\\Input\\MOCK_DATA_1000000.csv");
+
+            string outputPath = "C:\\Users\\user\\source\\repos\\C#基礎專案\\平行處理\\Output\\MOCK_DATA_1000000.csv";
+
+            helper.WriteList(outputPath, list);
 
             stopwatch.Stop();
 
