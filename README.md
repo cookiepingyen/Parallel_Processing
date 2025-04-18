@@ -25,7 +25,7 @@
 | 5,000,000 | 23.784 | | |
 | 10,000,000 | 57.193 | | |
 
-#### 實驗0-2 優化寫入後(讀取+寫入)：
+#### 實驗0-2 優化StreamWriter 循序寫入後(讀取+寫入)：
 
 | 筆數 | 讀取秒數(s) | 寫入秒數(s) | 總共耗時(s) | 記憶體用量(mb) |
 |------|------|------|------|------------|
@@ -184,3 +184,79 @@
 | 1,000,000 | 2.695 | 15 |
 | 5,000,000 | 55 | 15 |
 | 10,000,000 | 115.948 | 164 |
+
+
+
+
+---
+## 優化CSV讀取和寫入
+
+### Split VS Span (只做切割，取得字串陣列) 只有split 沒有加上反射
+| Method | Mean     | Error    | StdDev   | Gen0   | Allocated |
+|------- |---------:|---------:|---------:|-------:|----------:|
+| Split  | 441.5 ns | 13.64 ns | 39.56 ns | 1.0920 |     573 B |
+| Span   | 391.3 ns |  1.99 ns |  1.66 ns | 0.4964 |     260 B |
+
+### Split VS Span (只做切割，取得字串陣列) + 反射
+| Method | Mean     | Error     | StdDev    | Gen0   | Allocated |
+|------- |---------:|----------:|----------:|-------:|----------:|
+| Split  | 2.295 us | 0.0580 us | 0.1700 us | 1.6861 |     885 B |
+| Span   | 2.102 us | 0.0156 us | 0.0145 us | 1.0948 |     576 B |
+
+### Split VS Span (只做切割，取得字串陣列) + 反射 + GetProperties 只做一次
+| Method | Mean     | Error     | StdDev    | Gen0   | Allocated |
+|------- |---------:|----------:|----------:|-------:|----------:|
+| Split  | 2.337 us | 0.0592 us | 0.1744 us | 1.6861 |     885 B |
+| Span   | 1.868 us | 0.0308 us | 0.0241 us | 1.0223 |     537 B |
+
+### Split VS Span (只做切割，取得字串陣列) + 反射 + GetProperties 只做一次 + List 只建立一次
+| Method | Mean     | Error     | StdDev    | Gen0   | Allocated |
+|------- |---------:|----------:|----------:|-------:|----------:|
+| Split  | 2.295 us | 0.0482 us | 0.1422 us | 1.6861 |     885 B |
+| Span   | 1.880 us | 0.0328 us | 0.0291 us | 0.9232 |     485 B |
+
+
+### Split VS Span (只做切割，取得字串陣列) + 反射 + GetProperties 只做一次 + List 只建立一次 + 反射SetValue 只做一次
+| Method | Mean       | Error    | StdDev    | Gen0   | Allocated |
+|------- |-----------:|---------:|----------:|-------:|----------:|
+| Split  | 2,423.3 ns | 68.91 ns | 201.00 ns | 1.6861 |     885 B |
+| Span   |   506.9 ns |  5.09 ns |   4.25 ns | 0.5569 |     292 B |
+
+### Split VS Span (只做切割，取得字串陣列) + 反射 + GetProperties 只做一次 + List 只建立一次 + 反射SetValue 只做一次 + 拿掉string array
+| Method | Mean       | Error    | StdDev    | Gen0   | Allocated |
+|------- |-----------:|---------:|----------:|-------:|----------:|
+| Split  | 2,324.5 ns | 56.12 ns | 161.01 ns | 1.6861 |     885 B |
+| Span   |   471.8 ns |  4.02 ns |   3.14 ns | 0.4888 |     256 B |
+
+
+
+### Write VS OptimazeWrite (只做組成單筆字串data) + 不做TrimEnd
+| Method        | Mean     | Error     | StdDev    | Gen0   | Allocated |
+|-------------- |---------:|----------:|----------:|-------:|----------:|
+| Write         | 1.543 us | 0.0406 us | 0.1173 us | 0.5188 |     272 B |
+| OptimazeWrite | 1.496 us | 0.0561 us | 0.1655 us | 0.4196 |     220 B |
+
+### Write VS OptimazeWrite (只做組成單筆字串data) + 不做TrimEnd + 使用 StringBuilder
+| Method        | Mean     | Error     | StdDev    | Gen0   | Allocated |
+|-------------- |---------:|----------:|----------:|-------:|----------:|
+| Write         | 1.672 us | 0.0592 us | 0.1649 us | 0.5188 |     272 B |
+| OptimazeWrite | 1.240 us | 0.0242 us | 0.0322 us | 0.1297 |      68 B |
+
+### Write VS OptimazeWrite (只做組成單筆字串data) + 不做TrimEnd + 使用 StringBuilder + GetProperties只做一次
+| Method        | Mean     | Error     | StdDev    | Gen0   | Allocated |
+|-------------- |---------:|----------:|----------:|-------:|----------:|
+| Write         | 1.681 us | 0.0404 us | 0.1158 us | 0.8774 |     461 B |
+| OptimazeWrite | 1.089 us | 0.0188 us | 0.0193 us | 0.2518 |     132 B |
+
+### Write VS OptimazeWrite (只做組成單筆字串data) + 不做TrimEnd + ToString(0, stringBuilder.Length - 1) + 使用 StringBuilder + GetProperties只做一次 
+| Method        | Mean     | Error     | StdDev    | Gen0   | Allocated |
+|-------------- |---------:|----------:|----------:|-------:|----------:|
+| Write         | 1.726 us | 0.0551 us | 0.1617 us | 0.8774 |     461 B |
+| OptimazeWrite | 1.235 us | 0.0506 us | 0.1484 us | 0.2518 |     132 B |
+
+
+### Write VS OptimazeWrite (只做組成單筆字串data) + 不做TrimEnd + ToString(0, stringBuilder.Length - 1) + 使用 StringBuilder + GetProperties只做一次 + 反射GetValue只做一次
+| Method        | Mean       | Error    | StdDev    | Gen0   | Allocated |
+|-------------- |-----------:|---------:|----------:|-------:|----------:|
+| Write         | 1,873.8 ns | 55.74 ns | 164.34 ns | 0.8774 |     461 B |
+| OptimazeWrite |   212.9 ns |  4.12 ns |   4.75 ns | 0.2518 |     132 B |
