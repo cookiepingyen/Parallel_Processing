@@ -18,9 +18,9 @@ namespace 平行處理
             Stopwatch stopwatch = new Stopwatch();
             CSVHelper helper = new CSVHelper();
 
-            int ROW_COUNT = 40_000_000;
-            //int Batch_COUNT = 2_500_000;
-            int Batch_COUNT = 3_000_000;
+            int ROW_COUNT = 24_000_000;
+            int Batch_COUNT = 2_500_000;
+            //int Batch_COUNT = 3_000_000;
             double readTime = 0;
             double writeTime = 0;
             double subReadTime = 0;
@@ -53,29 +53,10 @@ namespace 平行處理
                     string outputPath = $"C:\\Users\\user\\source\\repos\\C#基礎專案\\平行處理\\Output\\MOCK_DATA_{ROW_COUNT}_{index}.csv";
                     Stopwatch subStopwatch = new Stopwatch();
                     subStopwatch.Start();
-                    List<CSVdata> list = helper.OptimizeRead<CSVdata>(inputPath, index * Batch_COUNT, Batch_COUNT);
+                    List<CSVdata> list = helper.Read<CSVdata>(inputPath, index * Batch_COUNT, Batch_COUNT);
                     subReadTime = Math.Round((subStopwatch.ElapsedMilliseconds / 1000f), 2);
                     subReadTimes.Add(subReadTime);
-
                     subStopwatch.Restart();
-
-                    int batchCount = 1_000_000;
-                    int batchSize = Batch_COUNT / batchCount;
-                    List<Task> writeTasks = new List<Task>();
-                    for (int j = 0; j < batchSize; j++)
-                    {
-                        int taskIndex = j;
-                        var rawData = list.Skip(taskIndex * batchCount).Take(batchCount).ToList();
-
-                        Task writeTask = Task.Run(() =>
-                        {
-                            helper.OptimizeWriteList($@"C:\Users\user\source\repos\C#基礎專案\平行處理\Output\task_{index}_{taskIndex}.csv", rawData);
-                        });
-
-                        writeTasks.Add(writeTask);
-                    }
-
-                    await Task.WhenAll(writeTasks);
 
                     helper.OptimizeWriteList(outputPath, list);
                     subWriteTime = Math.Round((subStopwatch.ElapsedMilliseconds / 1000f), 2);

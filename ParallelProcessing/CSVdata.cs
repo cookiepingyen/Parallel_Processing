@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace 平行處理
+namespace ParallelProcessing
 {
-    public class CSVdata
+    internal class CSVdata
     {
         public string id { get; set; }
         public string firstName { get; set; }
