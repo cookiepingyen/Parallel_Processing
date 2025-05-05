@@ -374,3 +374,5 @@
   10W:
   單檔案總寫入時間: 2.988s
   批次總寫入時間: 1.321s
+
+lock mutex concurrentBag/concurrentQueue/ReadWriteSlim/SemaphoreSlim(紅綠燈機制)

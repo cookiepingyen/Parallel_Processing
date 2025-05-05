@@ -16,6 +16,12 @@ namespace 平行處理
     {
         static async Task Main(string[] args)
         {
+            // concurrentBag/concurrentQueue => 裝載容器
+            // lock / mutex / ReadWriteSlim / SemaphoreSlim(紅綠燈機制)
+
+
+
+
 
             Stopwatch stopwatch = new Stopwatch();
             CSVHelper helper = new CSVHelper();
@@ -50,7 +56,6 @@ namespace 平行處理
 
             await Parallel.ForAsync(0, times, async (index, token) =>
             {
-
                 string outputPath = $"C:\\Users\\user\\source\\repos\\C#基礎專案\\平行處理\\Output\\MOCK_DATA_{ROW_COUNT}_{index}.csv";
                 Stopwatch subStopwatch = new Stopwatch();
                 subStopwatch.Start();
