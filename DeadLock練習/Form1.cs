@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,65 +20,29 @@ namespace DeadLock練習
         private static readonly object key = new object();
         private static readonly object key2 = new object();
 
-        public static int StaticNum;
-
-        public static int A = 0;
-        public static int B = 0;
+        public List<int> intList = new List<int>();
+        public ConcurrentBag<int> concurrentBag = new ConcurrentBag<int>();
+        public List<Task> taskList = new List<Task>();
         public Form1()
         {
             InitializeComponent();
 
-            StaticNum = 0;
-
-
-
-            Parallel.For(0, 100, (index, token) =>
-            {
-                //lock (key)
-                //{
-                //    NumAdd(ref StaticNum);
-                //}
-                NumAdd(ref StaticNum);
-            });
-
-            Console.WriteLine($"StaticNum: {StaticNum}");
-            Console.WriteLine($"A: {A}, B: {B}");
-
         }
 
-        public int NumAdd(ref int num)
+        private async void Form1_Load(object sender, EventArgs e)
         {
-            int temp = num;
+            //Parallel.For(0, 100, (index) =>
+            //{
+            //    intList.Add(index);
+            //});
 
-            Thread.Sleep(5);
-
-            lock (key)
+            for (int i = 0; i < 10000; i++)
             {
-                if (temp % 3 == 0)
-                {
-                    temp += 2;
-                    A++;
-                }
-                else
-                {
-                    temp += 1;
-                    B++;
-                }
-
+                taskList.Add(Task.Run(() => { concurrentBag.Add(i); }));
             }
 
-            num = temp;
-            return num;
-        }
-
-
-        public async Task ParallelTask()
-        {
-            Task task = Task.Run(async () =>
-            {
-
-            });
-            await task;
+            await Task.WhenAll(taskList);
+            Console.WriteLine(concurrentBag.Count);
         }
     }
 }
